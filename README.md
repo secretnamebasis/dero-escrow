@@ -1,1 +1,1 @@
-# dero-escrow is a work in progress to make escrow services private
+dero-escrow is a work in progress to make escrow services private
