@@ -1,0 +1,35 @@
+// desc is a DERO-HE Smart contract. 
+
+// DERO use a version of BASIC called DVM-BASIC                
+
+// This smart contract has two parties, 
+
+// In the future, there will be descs with more than two people
+
+// There is the Seller
+
+// The seller specifies what assets are for sale by depositing them
+
+// The seller specifies what assets are valid for the trade
+
+// The seller specifies how much of the assets are required for trad                                              // There is the buyer
+
+// The buyer agrees to the seller's specifications
+
+// The seller deposits the assets for sale into the contract
+                                                                                  
+// The buyer deposits agreed assets into the contract to initiate trade           
+
+// After both parties have deposited correct assets and correct amounts, the contract is valid
+
+// The Buyer agrees to the trade, including fees
+
+// The seller agrees to the trade, including fees
+
+// Upon mutual agreement, the contract is intiated
+
+// The contract trades the assets into their respective parties possesion
+
+// The buy and the seller have recieved their respective assets
+
+// Upon a valid completion of the contract, the contract is closed
