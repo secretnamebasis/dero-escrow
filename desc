@@ -9,10 +9,16 @@
 // There is the Seller
 
 // The seller specifies what assets are for sale by depositing them
+  
+    Function Deposit() Uint64
+        20  RETURN 0
+        End Function
 
 // The seller specifies what assets are valid for the trade
 
-// The seller specifies how much of the assets are required for trad                                              // There is the buyer
+// The seller specifies how much of the assets are required for trade                                              
+
+// There is the buyer
 
 // The buyer agrees to the seller's specifications
 
