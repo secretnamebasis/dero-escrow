@@ -1,41 +1,237 @@
-// desc is a DERO-HE Smart contract. 
+/*
+   DERO-ESCROW SMART CONTRACT
+   ---
 
-// DERO use a version of BASIC called DVM-BASIC                
+   desc-p2p-asset-exchange is a DERO-HE Smart contract. 
 
-// This smart contract has two parties, 
+   DERO uses a version of BASIC called DVM-BASIC                
 
-// In the future, there will be descs with more than two people
+   This smart contract assumes two parties, a seller and a buyer
 
-// There is the Seller
+   This smart contract also assumes that the two parties are exchanging tokens, not DERO. 
 
-// The seller specifies what assets are for sale by depositing them
+   For DERO-Token exchange, please see desc-p2p-dero-exchange.
+
+   Theoretically, a desc can have more than two people who are exchanging assets.
+
+   Additionally, a desc could have more than two assets being exchanged.
+
+   A seller who wanted to make use of DERO-HE smart contracts would follow these steps to conduct a sale on the DERO network.
+
+   This process is called using a desc to exchange funds.
+   
+   It is presupposed that the seller and the buyer are already using derod, dero-wallet-cli, and terminal. 
+
+   It is outside the scope of a desc to teach this, and there is lots of documentation at dero.io.
+
+   It is pressumed that people need desc to do different things, but it is essentially an exchange of assets.
+
+   As each desc is used for different exchanges of assets, desc assumes that you will be modifying the code before you deploy it
+
+   Knowing that people will modify and change this contract to their needs, desc has been crafted with a set of steps to help users make changes. 
+
+   This desc has been written to aid the users in their transaction.
+
+   Please follow the steps. 
+
+   ---
   
-    Function Deposit() Uint64
+   Step 1: Establish Baseline Understanding
+
+   The seller must understand that they will be depositing assets into a smart contract.
+ 
+   The seller understands that they must seed the contract with the assets they want to pass over a desc
+
+   This means that if you want a quantity of assetOne, the contract must contain any quantity of assetOne
+
+   This also means that if you want assetOne, the contract must contain assetTwo
+
+   There are risks to depositing assets into a deterministic, unforgiving system. 
+
+   The users assume all risk using and/or modifying this contract.
+
+   When you are okay with this, please move to Step 2. 
+*/
+
+Function Deposit() Uint64
         20  RETURN 0
         End Function
 
-// The seller specifies what assets are valid for the trade
+/*
+   Step 2 Establish Exchange Rate
 
-// The seller specifies how much of the assets are required for trade                                              
+   The following Function establishes the rate of exchange. 
+   
+   In the example below, you can see that the "ASSETVALUE(incoming)" will be divided by 10
 
-// There is the buyer
+   Therefore, the amount that will be going out will be a 10th of what comes in.
 
-// The buyer agrees to the seller's specifications
+   Conversly, you could change the "/10" to be "*10".
 
-// The seller deposits the assets for sale into the contract
-                                                                                  
-// The buyer deposits agreed assets into the contract to initiate trade           
+   This means that you would send out 10 times what you have coming in.
 
-// After both parties have deposited correct assets and correct amounts, the contract is valid
+   Take a moment to consider what you want the exchange rate to be and make that change now.
+*/
 
-// The Buyer agrees to the trade, including fees
+Function Interchange(incoming String, outgoing String) Uint64
+        10  SEND_ASSET_TO_ADDRESS(SIGNER(),ASSETVALUE(incoming)/10, outgoing)  
+        20  RETURN 0
+        End Function
 
-// The seller agrees to the trade, including fees
+/*
+   Step 3: Establish Privacy Settings
 
-// Upon mutual agreement, the contract is intiated
+   This contact can either be public or private. 
 
-// The contract trades the assets into their respective parties possesion
+   We have made desc a private exchange, by default. 
+  
+   The contract's code will still be public, eg the exchange rate. 
 
-// The buy and the seller have recieved their respective assets
+   A private desc will not not expose the assets, eg which assets.
 
-// Upon a valid completion of the contract, the contract is closed
+   This contract has an owner, and that owner will be stored in an obfuscated way once the contract is depoloyed
+
+   It is highly recommended that you maintain ownership of the contract, you never know when you need to make ammendments
+
+   If you want to eliminate the privacy of this exchange, simply delete the word private from the function below
+*/
+
+Function InitializePrivate() Uint64
+        10 STORE("owner", SIGNER())   // store in DB  ["owner"] = address
+        40  RETURN 0
+        End Function
+/*
+   Step 4: Deploy the contract
+
+   4.a. The seller would need to have derod running locally in this example
+  
+   4.b. The seller would then need to set their wallet to rpc server mode and bind the rpc address
+
+        Ex. dero-wallet-cli-linux-amd64 --rpc-server --rpc-bind=127.0.0.1:40403
+
+   4.c. And the seller of the contract creates the contract by creating and installing a desc.bas to the network:
+  
+        curl  --request POST --data-binary   @desc.bas http://127.0.0.1:40403/install_sc
+
+   4.d. The terminal would provide an output "TXID", this is the SCID of the desc.
+
+   
+   Step 5: Deposit the asset you want to receive in the exchange
+
+   5.a. Where it says "Interchange-SCID", you need to change it with the TXID you received in the last step. 
+
+   5.b. Remember, you have to deposit a quantity of the asset that you want from the exchange
+
+        Thusly, where it says "ASSET_ONE_SCID", you must input the SCID of the asset you want
+
+   5.c. And where it says AssetOneCount, you need to put in a non-negative, whole number to the fifth decimal
+
+        Ex. 1000000 is 10.0 
+   
+        Ex. 120000 is 1.2  
+
+        Ex. 123 is 0.00123  
+
+   6.d. Please make the necessary changes to the command below and enter it into the terminal.
+  
+   curl --silent http://127.0.0.1:40403/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"transfer","params":{"scid":"'"Interchange-SCID"'","ringsize":2, "sc_rpc":[{"name":"entrypoint","datatype":"S","value":"Deposit"}], "transfers": [ {"scid":"'"ASSET_ONE_SCID"'", "burn":AssetOneCount_DEPOSITED_TO_EXCHANGE}] }}' -H 'Content-Type: application/json'
+
+
+   Step 6. Deposit the asset you will be giving in the exchange
+
+   6.a. Where it says "Interchange-SCID", you need to change it with the TXID you received in the last step.
+
+   6.b. Remember, you have to deposit a quantity of the asset that you'll give in the exchange
+
+        Thusly, where it says "ASSET_TWO_SCID", you must input the SCID of the asset you want
+
+   6.c. And where it says AssetTwoCount, you need to put in a non-negative, whole number to the fifth decimal. See 5.c. above for examples
+
+   6.d. Please make the necessary changes to the command below and enter it into the terminal.
+
+  curl --silent http://127.0.0.1:40403/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"transfer","params":{"scid":"'"Interchange-SCID"'","ringsize":2, "sc_rpc":[{"name":"entrypoint","datatype":"S","value":"Deposit"}], "transfers": [ {"scid":"'"ASSET_TWO_SCID"'", "burn":AssetTwoCount_DEPOSITED_TO_EXCHANGE}] }}' -H 'Content-Type: application/json'  
+
+  Step 7: Prepare Buyer's Escrow instruction 
+  
+  7.a. Where it says "Interchange-SCID", please replace that with the TXID from 4.d.
+
+  7.b. Where it says "ASSET_ONE_SCID", please replace with the SCID found in 5.b.
+
+  7.c. Where it says "ASSET_TWO_SCID", please replace with the SCID found in 6.b.
+
+  7.d. Where it says AssetOneCount, please replace with the amount that will be leaving the buyer's wallet
+
+  7.e. Copy the command and paste it in the Buyer's Escrow Instructions below, part D
+
+  curl --silent http://127.0.0.1:40403/json_rpc -d '{"jsonrpc":"2.0","id":"0","method":"transfer","params":{"scid":"'"Interchange-SCID"'","ringsize":2, "sc_rpc":[{"name":"entrypoint","datatype":"S","value":"Interchange"},{"name":"incoming","datatype":"H","value":"'"ASSET_ONE_SCID"'"},{"name":"outgoing","datatype":"H","value":"'"ASSET_TWO_SCID"'"}], "transfers": [{"scid":"'"ASSET_ONE_SCID"'", "burn":AssetOneCount_TO_BE__Converted}] }}' -H 'Content-Type: application/json'
+  
+  7.f. Please provide the buyer with the SCID for the desc from 4.d. 
+
+       This will give the buyer a chance to review the contract they will be engaging in. 
+
+       If the buyer hasn't done so, please provide the buyer with the following instructions on how to engage with the desc. 
+
+  - Buyer's Escrow Instructions -
+  
+    BUYER BEWARE: BUYER BARES SOLE RESPONSIBILITY FOR ANY LOSS INCURRED ENGAGING WITH THIS DERO ESCROW SMART CONTRACT, OR DESC    
+
+    A. The buyer agrees to have derod running locally in this example
+
+    B. The buyer agrees to set their wallet to rpc server mode and bind the rpc address
+
+       Ex. dero-wallet-cli-linux-amd64 --rpc-server --rpc-bind=127.0.0.1:40403
+
+    C. The buyer agrees to the seller's specifications by engaging with the smart contract, otherwise they request ammendments.
+
+    D. The buyer agrees to enter the following command in there terminal to initiate the exchange
+
+       replace-this-text-with-curl-command-found-in-7.e.
+    
+    F. The buyer may confirm the exchange by typing following command balance in their wallet, followed by the SCID they exchanged
+
+
+  Step 8: Withdraw Asset From Exchange
+
+		To-Do
+*/
+
+// everything below this is supplementary and not required
+
+        // This function is used to change owner
+        // owner is an string form of address
+        Function TransferOwnership(newowner String) Uint64
+        10  IF LOAD("owner") == SIGNER() THEN GOTO 30
+        20  RETURN 1
+        30  STORE("tmpowner",ADDRESS_RAW(newowner))
+        40  RETURN 0
+        End Function
+
+        // Until the new owner claims ownership, existing owner remains owner
+        Function ClaimOwnership() Uint64
+        10  IF LOAD("tmpowner") == SIGNER() THEN GOTO 30
+        20  RETURN 1
+        30  STORE("owner",SIGNER()) // ownership claim successful
+        40  RETURN 0
+        End Function
+
+        // if signer is owner, withdraw any requested funds
+        // if everthing is okay, they will be showing in signers wallet
+   Function Withdraw(amount Uint64, asset String) Uint64
+        10  IF LOAD("owner") == SIGNER() THEN GOTO 30
+        20  RETURN 1
+        30  SEND_ASSET_TO_ADDRESS(SIGNER(),amount,asset)
+        40  RETURN 0
+        End Function
+
+        // if signer is owner, provide him rights to update code anytime
+        // make sure update is always available to SC
+        Function UpdateCode( code String) Uint64
+        10  IF LOAD("owner") == SIGNER() THEN GOTO 30
+        20  RETURN 1
+        30  UPDATE_SC_CODE(code)
+        40  RETURN 0
+        End Function
+
+
+
+
